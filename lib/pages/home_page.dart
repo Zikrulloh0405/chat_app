@@ -2,6 +2,8 @@ import 'package:chat_app/pages/chat_room_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../models/chat_room_model.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -19,26 +21,18 @@ class _HomePageState extends State<HomePage> {
 
   // bool isEmailValid = false;
 
-  final Map categoryData = {
-    "Cars": FontAwesomeIcons.car,
-    "Technology": FontAwesomeIcons.microchip,
-    "Sport": FontAwesomeIcons.football,
-    "Fashion": FontAwesomeIcons.tshirt,
-    "Crypto": FontAwesomeIcons.bitcoin,
-    "Market": FontAwesomeIcons.shoppingCart,
-    "Others": FontAwesomeIcons.ellipsisH,
-  };
 
-  List listOfActiveButtons = [];
+
+  ChatRoom? chosenChat;
 
   bool isEmailValid = false;
 
-  void changeButtonStatus(elem) {
+  void changeButtonStatus(ChatRoom chatRoom) {
     setState(() {
-      if (listOfActiveButtons.contains(elem)) {
-        listOfActiveButtons.remove(elem);
+      if (chosenChat == chatRoom) {
+        chosenChat = null; // Deselect the chat if it's already selected
       } else {
-        listOfActiveButtons.add(elem);
+        chosenChat = chatRoom; // Select the new chat
       }
     });
   }
@@ -52,29 +46,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   bool isJoinActive() {
-    return listOfActiveButtons.isNotEmpty && isEmailValid;
+    return chosenChat != null && isEmailValid;
   }
 
   @override
   Widget build(BuildContext context) {
-    print(listOfActiveButtons);
-    print(validateEmail());
     return Scaffold(
       // backgroundColor: Colors.grey,
       body: Column(
         children: [
           const Spacer(),
           Expanded(
-            flex: 5,
+            flex: 7,
             child: Card(
               color: Colors.white,
               margin: const EdgeInsets.symmetric(horizontal: 20),
-              // padding: const EdgeInsets.symmetric(horizontal: 20),
-              // decoration: BoxDecoration(
-              //     borderRadius: BorderRadius.circular(4),
-              //     border: Border.all(
-              //       color: Colors.grey,
-              //     )),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -119,11 +105,6 @@ class _HomePageState extends State<HomePage> {
                           ),
                           onChanged: (value) {
                             setState(() {
-                              // if (emailController.text.isNotEmpty) {
-                              //   isEmailValid = RegExp(
-                              //           r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-                              //       .hasMatch(emailController.text);
-                              // }
                               isEmailValid = validateEmail();
                             });
                           },
@@ -132,63 +113,67 @@ class _HomePageState extends State<HomePage> {
                     ),
 
                     const SizedBox(
-                      height: 40,
+                      height: 30,
                     ),
 
-                    /// text and categories
                     Column(
                       children: [
                         const Text(
-                          "Please Choose one of the following topics below that you want to discuss about ...",
+                          "Please choose a topic below to discuss:",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.w600),
                         ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Wrap(
-                          runAlignment: WrapAlignment.start,
-                          spacing: 10.0,
-                          runSpacing: 16.0,
-                          children: categoryData.entries.map((elem) {
-                            bool isButtonActive =
-                                listOfActiveButtons.contains(elem.key);
-                            return ElevatedButton.icon(
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    const WidgetStatePropertyAll(Colors.white),
-                                shape: WidgetStatePropertyAll(
-                                  RoundedRectangleBorder(
+                        const SizedBox(height: 10),
+                        Container(
+                          height: 320,
+                          child: GridView.builder(
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 3,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                            ),
+                            itemCount: listOfChats.length,
+                            itemBuilder: (context, index) {
+                              final chatRoom = listOfChats[index];
+                              final isButtonActive = chosenChat == chatRoom;
+                              return Container(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
                                     side: BorderSide(
-                                        color: isButtonActive
-                                            ? Colors.pink
-                                            : Colors.grey),
-                                    borderRadius: BorderRadius.circular(8),
+                                      color: isButtonActive
+                                          ? Colors.pink
+                                          : Colors.grey,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    changeButtonStatus(chatRoom);
+                                  },
+                                  icon: Icon(chatRoom.chatIcon,
+                                      color: isButtonActive
+                                          ? Colors.pink
+                                          : Colors.grey),
+                                  label: Text(
+                                    chatRoom.chatName,
+                                    style: TextStyle(
+                                      color: isButtonActive
+                                          ? Colors.pink
+                                          : Colors.grey,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              onPressed: () {
-                                changeButtonStatus(elem.key);
-                                print(
-                                    "List of Active Buttons $listOfActiveButtons");
-                                print("Name ${elem.key}, Icon ${elem.value}, ");
-                              },
-                              icon: Icon(elem.value,
-                                  color: isButtonActive
-                                      ? Colors.pink
-                                      : Colors.grey),
-                              label: Text(
-                                elem.key,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: isButtonActive
-                                        ? Colors.pink
-                                        : Colors.grey),
-                              ),
-                              iconAlignment: IconAlignment.end,
-                            );
-                          }).toList(),
-                        )
+                              );
+                            },
+                          ),
+                        ),
                       ],
                     ),
 
@@ -205,6 +190,7 @@ class _HomePageState extends State<HomePage> {
                                 MaterialPageRoute(
                                   builder: (context) => ChatRoomPage(
                                     email: emailController.text,
+                                    chatRoom: chosenChat!,
                                   ),
                                 ),
                               );
@@ -236,3 +222,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
+
+
+// final Map categoryData = {
+//   ChatRoom(),
+//   "Technology": FontAwesomeIcons.microchip,
+//   "Sport": FontAwesomeIcons.football,
+//   "Fashion": FontAwesomeIcons.tshirt,
+//   "Crypto": FontAwesomeIcons.bitcoin,
+//   "Market": FontAwesomeIcons.shoppingCart,
+//   "Others": FontAwesomeIcons.ellipsisH,
+// };
+
+final List listOfChats = [
+  ChatRoom(chatName: "Car", chatIcon: FontAwesomeIcons.car),
+  ChatRoom(chatName: "Technology", chatIcon: FontAwesomeIcons.microchip),
+  ChatRoom(chatName: "Sport", chatIcon: FontAwesomeIcons.football),
+  ChatRoom(chatName: "Fashion", chatIcon: FontAwesomeIcons.tshirt),
+  ChatRoom(chatName: "Crypto", chatIcon: FontAwesomeIcons.bitcoin),
+  ChatRoom(chatName: "Market", chatIcon: FontAwesomeIcons.shoppingCart),
+  ChatRoom(chatName: "Others", chatIcon: FontAwesomeIcons.ellipsisH),
+];
+

@@ -48,6 +48,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
   web_socket_channel: ^3.0.1
+  l: ^4.0.2
 
   font_awesome_flutter: ^10.8.0
 

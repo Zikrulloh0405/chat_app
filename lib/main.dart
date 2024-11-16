@@ -24,6 +24,7 @@
 // }
 //
 
+import 'package:chat_app/server/web_socket_connection.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -43,23 +44,15 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: StreamBuilder(
-        stream: channel.stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) return Text('Error: ${snapshot.error}');
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-              return Text('No connection');
-            case ConnectionState.waiting:
-              return Text('Connecting...');
-            case ConnectionState.active:
-              return Center(child: Text('${snapshot.data}'));
-            case ConnectionState.done:
-              return Text('${snapshot.data} (closed)');
-          }
-        },
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white
+        )
       ),
+      home: WebSocketServer(channel: channel),
     );
   }
 }
+
 
